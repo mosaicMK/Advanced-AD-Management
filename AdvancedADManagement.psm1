@@ -22,6 +22,7 @@ Function Get-DomainUser{
     [CmdletBinding()]
      Param(
             [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
+            [Alias("Name","SamAccountName","AccountName","UserAccount")]
             $SamAccountName
         )
         process{
@@ -70,6 +71,7 @@ Function Unlock-DomainUser{
     #>
     Param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
+        [Alias("Name","SamAccountName","AccountName","UserAccount")]
         $SamAccountName
     )
     Process{
@@ -103,14 +105,18 @@ Function Reset-DomainUserPassword{
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
+        [Alias("Name","SamAccountName","AccountName","UserAccount")]
         $SamAccountName,
         [string]$Password,
         [switch]$DontChangePasswordAtLogin
     )
 
-    $Value = $Password | ConvertTo-SecureString -AsPlainText -Force
     Process{
-        If ($Password) {Set-ADAccountPassword -Identity $SamAccountName -Reset -NewPassword $Value} IF (!($Password)){Set-ADAccountPassword -Identity $SamAccountName -Reset}
+        If ($Password) {
+            $Value = $Password | ConvertTo-SecureString -AsPlainText -Force
+            Set-ADAccountPassword -Identity $SamAccountName -Reset -NewPassword $Value
+        }
+        IF (!($Password)){Set-ADAccountPassword -Identity $SamAccountName -Reset}
         IF ($DontChangePasswordAtLogin) {Set-ADUser -Identity $SamAccountName -ChangePasswordAtLogon $false} IF (!($DontChangePasswordAtLogin)){Set-ADUser -Identity $SamAccountName -ChangePasswordAtLogon $True}
         $Value = $null
         $Password = $null
@@ -136,11 +142,12 @@ function Get-DomainUserGroupMembership {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
-        $SamAccountName
+        [Alias("Name","SamAccountName")]
+        $AccountName
     )
 
     Process{
-        $Groups = (Get-Aduser $SamAccountName -Properties *).MemberOf
+        $Groups = (Get-Aduser $AccountName -Properties *).MemberOf
         $AllObjects = @()
         foreach ($item in $Groups) {
             $GroupName = Get-ADGroup "$item" -Properties *
@@ -173,6 +180,7 @@ Function Get-DomainGroupMembers{
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
+        [Alias("Name","DomainGroupName","DomainGroup")]
         $GroupName
     )
     process{
@@ -208,18 +216,60 @@ function Get-DomainGroup {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
+        [Alias("Name","DomainGroupName","DomainGroup")]
         $GroupName
     )
-    $Group = Get-ADGroup -Filter {name -like $GroupName} -Properties *
-    Foreach ($Item in $Group){
-        $DGroup = New-Object -TypeName psobject
-        $DGroup | Add-Member -MemberType NoteProperty -Name GroupName -Value $Item.SamAccountName
-        $DGroup | Add-Member -MemberType NoteProperty -Name CononicalName -Value $Item.CanonicalName
-        $DGroup | Add-Member -MemberType NoteProperty -Name DistinguishedName -Value $Item.DistinguishedName
-        $DGroup | Add-Member -MemberType NoteProperty -Name DateCreated -Value $Item.whenCreated
-        $DGroup | Add-Member -MemberType NoteProperty -Name DateModified -Value $Item.WhenChanged
-        $DGroup | Add-Member -MemberType NoteProperty -Name Type -Value $Item.GroupCategory
-        $DGroup | Add-Member -MemberType NoteProperty -Name Scope -Value $Item.GroupScope
-        $DGroup
+    Process{
+        $Group = Get-ADGroup -Filter {CN -like $GroupName} -Properties *
+        Foreach ($Item in $Group){
+            $DGroup = New-Object -TypeName psobject
+            $DGroup | Add-Member -MemberType NoteProperty -Name GroupName -Value $Item.CN
+            $DGroup | Add-Member -MemberType NoteProperty -Name CononicalName -Value $Item.CanonicalName
+            $DGroup | Add-Member -MemberType NoteProperty -Name DistinguishedName -Value $Item.DistinguishedName
+            $DGroup | Add-Member -MemberType NoteProperty -Name DateCreated -Value $Item.whenCreated
+            $DGroup | Add-Member -MemberType NoteProperty -Name DateModified -Value $Item.WhenChanged
+            $DGroup | Add-Member -MemberType NoteProperty -Name Type -Value $Item.GroupCategory
+            $DGroup | Add-Member -MemberType NoteProperty -Name Scope -Value $Item.GroupScope
+            $DGroup
+        }
+    }
+}
+
+
+Function Get-DomainComputer{
+    <#
+    .SYNOPSIS
+    Gets a domain computer
+
+    .PARAMETER ComputerName
+    Name of the computer to get
+
+    .NOTES
+    Created By: Kris Gross
+    Contact: Contact@mosaicMK.com
+    Version 1.0.0.0
+
+    .LINK
+    https://www.mosaciMK.com
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
+        [Alias("Name","DeviceName","Computer","Device")]
+        $ComputerName
+    )
+    Process{
+        $Device = Get-ADComputer -filter {name -like $ComputerName} -Properties *
+        Foreach ($item in $Device){
+            $DDevice = New-Object -TypeName psobject
+            $DDevice | Add-Member -MemberType NoteProperty -Name Name -Value $item.Name
+            $DDevice | Add-Member -MemberType NoteProperty -Name Description -Value $item.Description
+            $DDevice | Add-Member -MemberType NoteProperty -Name CanonicalName -Value $item.CanonicalName
+            $DDevice | Add-Member -MemberType NoteProperty -Name DistinguishedName -Value $item.DistinguishedName
+            $DDevice | Add-Member -MemberType NoteProperty -Name DateCreated -Value $item.Created
+            $BitLockerObjects = (Get-ADObject -Filter {objectclass -eq 'msFVE-RecoveryInformation'} -SearchBase $item.DistinguishedName -Properties 'msFVE-RecoveryPassword').'msFVE-RecoveryPassword'
+            $DDevice | Add-Member -MemberType NoteProperty -Name BitLockerRecoveryPassword -Value $BitLockerObjects
+            $DDevice
+        }
     }
 }
