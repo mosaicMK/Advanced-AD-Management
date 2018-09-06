@@ -14,7 +14,7 @@ Function Get-DomainUser{
     .NOTES
     Created By: Kris Gross
     Contact: Contact@mosaicMK.com
-    Version 1.0.0.0
+    Version 1.0.0.1
 
     .LINK
     https://www.mosaciMK.com
@@ -22,7 +22,7 @@ Function Get-DomainUser{
     [CmdletBinding()]
      Param(
             [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
-            [Alias("Name","SamAccountName","AccountName","UserAccount")]
+            [Alias("Name","AccountName","UserAccount")]
             $SamAccountName
         )
         process{
@@ -64,14 +64,14 @@ Function Unlock-DomainUser{
     .NOTES
     Created By: Kris Gross
     Contact: Contact@mosaicMK.com
-    Version 1.0.0.0
+    Version 1.0.0.1
 
     .LINK
     https://www.mosaciMK.com
     #>
     Param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
-        [Alias("Name","SamAccountName","AccountName","UserAccount")]
+        [Alias("Name","AccountName","UserAccount")]
         $SamAccountName
     )
     Process{
@@ -96,7 +96,7 @@ Function Reset-DomainUserPassword{
     .NOTES
     Created By: Kris Gross
     Contact: Contact@mosaicMK.com
-    Version 1.0.0.0
+    Version 1.0.0.1
 
     .LINK
     https://www.mosaciMK.com
@@ -105,7 +105,7 @@ Function Reset-DomainUserPassword{
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
-        [Alias("Name","SamAccountName","AccountName","UserAccount")]
+        [Alias("Name","AccountName","UserAccount")]
         $SamAccountName,
         [string]$Password,
         [switch]$DontChangePasswordAtLogin
@@ -134,7 +134,7 @@ function Get-DomainUserGroupMembership {
     .NOTES
     Created By: Kris Gross
     Contact: Contact@mosaicMK.com
-    Version 1.0.0.0
+    Version 1.0.0.1
 
     .LINK
     https://www.mosaciMK.com
@@ -142,7 +142,7 @@ function Get-DomainUserGroupMembership {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
-        [Alias("Name","SamAccountName")]
+        [Alias("Name","SamAccountName","UserAccount")]
         $AccountName
     )
 
@@ -172,7 +172,7 @@ Function Get-DomainGroupMembers{
     .NOTES
     Created By: Kris Gross
     Contact: Contact@mosaicMK.com
-    Version 1.0.0.0
+    Version 1.0.0.1
 
     .LINK
     https://www.mosaciMK.com
@@ -208,7 +208,7 @@ function Get-DomainGroup {
     .NOTES
     Created By: Kris Gross
     Contact: Contact@mosaicMK.com
-    Version 1.0.0.0
+    Version 1.0.0.1
 
     .LINK
     https://www.mosaciMK.com
