@@ -142,12 +142,12 @@ function Get-DomainUserGroupMembership {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName)]
-        [Alias("Name","SamAccountName","UserAccount")]
-        $AccountName
+        [Alias("Name","AccountName","UserAccount")]
+        $SamAccountName
     )
 
     Process{
-        $Groups = (Get-Aduser $AccountName -Properties *).MemberOf
+        $Groups = (Get-Aduser $SamAccountName -Properties *).MemberOf
         $AllObjects = @()
         foreach ($item in $Groups) {
             $GroupName = Get-ADGroup "$item" -Properties *
